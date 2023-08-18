@@ -1,0 +1,52 @@
+---
+- hosts: 86.111.48.59
+  gather_facts: yes
+  become: yes
+
+  tasks:
+
+  - name: Check if 'automation' group exists
+    ansible.builtin.group:
+      name: automation
+      state: present
+    register: group_result
+
+  - name: Create 'ansible' user without a home directory and assign to 'automation' group
+    when: group_result.changed
+    ansible.builtin.user:
+      name: ansible
+      group: automation
+      createhome: false
+      state: present
+
+  - name: Update all packages to their latest version (Debian/Ubuntu)
+    ansible.builtin.apt:
+      update_cache: true
+      name: "*"
+      state: latest
+    when: ansible_os_family == "Debian"
+    ignore_errors: true
+
+  - name: Install Cmatrix application (Debian/Ubuntu)
+    ansible.builtin.apt:
+      name: cmatrix
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Install required utilities (Debian/Ubuntu)
+    ansible.builtin.apt:
+      name:
+        - curl
+        - jq
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Create script file using copy module and insert content for MOTD and make it executable 
+    ansible.builtin.copy:
+      dest: "/etc/update-motd.d/quote-of-the-day"
+      content: |
+        #!/usr/bin/env bash
+        QUOTE=$(curl -s https://api.quotable.io/random | jq .content) 
+        echo -e "\e[1;32mQuote of the day: $QUOTE"
+        echo -e "\e[0;39m"
+      mode: '0755'
