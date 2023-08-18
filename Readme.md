@@ -15,7 +15,7 @@ This Ansible playbook is designed to automate tasks for a server, specifically t
 
 ### Target Host
 
-- `86.111.48.59`
+- `127.0.0.1`
 
 ### Tasks
 
