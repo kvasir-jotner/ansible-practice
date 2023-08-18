@@ -1,5 +1,5 @@
 ---
-- hosts: 86.111.48.59
+- hosts: #set host
   gather_facts: yes
   become: yes
 
